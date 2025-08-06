@@ -8,7 +8,7 @@ export default function Home() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  const FLASK_BACKEND_URL = 'http://localhost:5000';
+  const FLASK_BACKEND_URL = process.env.APIURL || 'http://localhost:5000';
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
