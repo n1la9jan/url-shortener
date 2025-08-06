@@ -8,8 +8,12 @@ export default function Home() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  const FLASK_BACKEND_URL = process.env.APIURL || 'http://localhost:5000';
+  const FLASK_BACKEND_URL = "https://url-shortener-backend-ol0l.onrender.com/shorten"
+  console.log('ENV:', process.env.API);
 
+  if (!FLASK_BACKEND_URL) {
+    console.error('FLASK_BACKEND_URL is not defined!');
+  }
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
