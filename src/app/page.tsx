@@ -1,103 +1,125 @@
-import Image from "next/image";
+'use client';
+import { useState, FormEvent } from 'react';
+import Head from 'next/head';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [longUrl, setLongUrl] = useState<string>('');
+  const [shortUrl, setShortUrl] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const FLASK_BACKEND_URL = 'http://localhost:5000';
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setShortUrl('');
+
+    try {
+      const response = await fetch(`${FLASK_BACKEND_URL}/shorten`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: longUrl }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setShortUrl(data.new_url);
+        setLongUrl('');
+      } else {
+        setError(data.error || 'Something went wrong!');
+      }
+    } catch (err) {
+      setError('Failed to connect to the backend API. Please check if the Flask server is running.');
+      console.error('Fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (shortUrl) {
+      const textArea = document.createElement('textarea');
+      textArea.value = shortUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Short URL copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy URL. Please copy manually.');
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-pink-200 flex items-center justify-center p-4 font-sans">
+      <Head>
+        <title>URL Shortener</title>
+        <meta name="description" content="URL shortener using python and react."/>
+      </Head>
+
+      <main className="bg-purple-300 p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center text-pink-800 mb-6">
+          🔗 URL Shortener
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="longUrl" className="block text-sm font-medium text-gray-700 mb-1">
+              Enter Long URL:
+            </label>
+            <input
+              type="url"
+              id="longUrl"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="https://google.com/"
+              value={longUrl}
+              onChange={(e) => setLongUrl(e.target.value)}
+              required
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+          <button
+            type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            disabled={loading}
           >
-            Read our docs
-          </a>
-        </div>
+            {loading ? 'Shortening...' : 'Shorten URL'}
+          </button>
+        </form>
+
+        {error && (
+          <p className="mt-4 text-red-600 text-center text-sm">{error}</p>
+        )}
+
+        {shortUrl && (
+          <div className="mt-6 p-4 bg-rose-100 border border-blue-200 rounded-md flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-blue-800 text-sm break-all flex-grow">
+              Your Short URL:{' '}
+              <a
+                href={shortUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold underline"
+              >
+                {shortUrl}
+              </a>
+            </p>
+            <button
+              onClick={handleCopy}
+              className="flex-shrink-0 py-1.5 px-3 border border-blue-600 rounded-md text-sm font-medium text-blue-600 bg-white hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Copy
+            </button>
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
