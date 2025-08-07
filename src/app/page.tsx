@@ -8,8 +8,7 @@ export default function Home() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  const FLASK_BACKEND_URL = "https://url-shortener-backend-ol0l.onrender.com/shorten"
-  console.log('ENV:', process.env.API);
+  const FLASK_BACKEND_URL = "https://url-shortener-backend-ol0l.onrender.com"
 
   if (!FLASK_BACKEND_URL) {
     console.error('FLASK_BACKEND_URL is not defined!');
