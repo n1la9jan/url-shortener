@@ -8,11 +8,13 @@ export default function Home() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
+  //for development change the url accordingly
   const FLASK_BACKEND_URL = "https://url-shortener-backend-ol0l.onrender.com"
+  //const FLASK_BACKEND_URL = "http://localhost:5000";
 
-  if (!FLASK_BACKEND_URL) {
-    console.error('FLASK_BACKEND_URL is not defined!');
-  }
+  // if (!FLASK_BACKEND_URL) {
+  //   console.error('FLASK_BACKEND_URL is not defined!');
+  // }
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -82,7 +84,7 @@ export default function Home() {
               type="url"
               id="longUrl"
               className="mt-1 block w-full px-4 py-2 border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="https://google.com/"
+              placeholder="https://instagram.com/zuck"
               value={longUrl}
               onChange={(e) => setLongUrl(e.target.value)}
               required
@@ -123,6 +125,10 @@ export default function Home() {
           </div>
         )}
       </main>
+      <div className='absolute bottom-1 text-center text-green-700 font-semibold'>
+        <h2 className=''>OpenSource and free to use ❤️</h2>
+        <a href="http://github.com/n1la9jan/url-shortener" className='underline text-blue-500'>For contribution click here</a>
+      </div>
     </div>
   );
 }
